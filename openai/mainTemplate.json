@@ -1,0 +1,1453 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environment_code": {
+            "type": "String",
+            "metadata": {
+                "description": "Suffix added to all resource name to make them unique. Should consist of only lower case alphabet and numbers. Total length should be less than 6 characters."
+            }
+        },
+        "pbi_workspace_id": {
+            "type": "String",
+            "metadata": {
+                "description": "PowerBi workspace Id."
+            }
+        }
+    },
+    "variables": {
+        "resource_group_name": "[resourceGroup().name]",
+        "subscriptionid": "[subscription().subscriptionId]",
+        "unique_suffix": "[concat(uniqueString(deployment().name), '-', parameters('environment_code'))]",
+        "location": "[resourceGroup().location]",
+        "storage_account_name": "[if(greater(length(concat('stopenai', parameters('environment_code'),uniqueString(deployment().name))), 24), substring(concat('stopenai',parameters('environment_code'),uniqueString(deployment().name)),0,24) , concat('stopenai',parameters('environment_code'),uniqueString(deployment().name)) )]",
+        "default_data_lake_storage_file_system_name": "openai-data",
+        "forms_openai_name": "[concat('form-openai-',variables('unique_suffix'))]",
+        "search_openai_demo_name": "[concat('srch-openai-',variables('unique_suffix'))]",
+        "accounts_open_ai_name": "[if(greater(length(concat('openAIservice', parameters('environment_code'),uniqueString(deployment().name))), 24), substring(concat('openAIservice',parameters('environment_code'),uniqueString(deployment().name)),0,24) , concat('openAIservice',parameters('environment_code'),uniqueString(deployment().name)) )]",
+        "accounts_cog_openai_name": "[concat('cog-openai-',variables('unique_suffix'))]",
+        "asp_func_recommend_images_name": "[concat('asp-recommend-images-',variables('unique_suffix'))]",
+        "asp_func_search_horizontal_name": "[concat('asp-search-horizontal-',variables('unique_suffix'))]",
+        "asp_func_campaign_generator_name": "[concat('asp-campaign-generator-',variables('unique_suffix'))]",
+        "asp_func_regenerate_dalle_name": "[concat('asp-regenerate-dalle-',variables('unique_suffix'))]",
+        "asp_func_pdf_indexer_name": "[concat('asp-pdf-indexer-',variables('unique_suffix'))]",
+        "storage_func_recommend_images_name": "[if(greater(length(concat('strecommendimages', parameters('environment_code'),uniqueString(deployment().name))), 24), substring(concat('strecommendimages',parameters('environment_code'),uniqueString(deployment().name)),0,24) , concat('strecommendimages',parameters('environment_code'),uniqueString(deployment().name)) )]",
+        "storage_func_search_horizontal_name": "[if(greater(length(concat('stsearchhorizontal', parameters('environment_code'),uniqueString(deployment().name))), 24), substring(concat('stsearchhorizontal',parameters('environment_code'),uniqueString(deployment().name)),0,24) , concat('stsearchhorizontal',parameters('environment_code'),uniqueString(deployment().name)) )]",
+        "storage_func_campaign_generator_name": "[if(greater(length(concat('stcmpggenerator', parameters('environment_code'),uniqueString(deployment().name))), 24), substring(concat('stcmpggenerator',parameters('environment_code'),uniqueString(deployment().name)),0,24) , concat('stpdfindexer',parameters('environment_code'),uniqueString(deployment().name)) )]",
+        "storage_func_pdf_indexer_name": "[if(greater(length(concat('stpdfindexer', parameters('environment_code'),uniqueString(deployment().name))), 24), substring(concat('stpdfindexer',parameters('environment_code'),uniqueString(deployment().name)),0,24) , concat('stcmpggenerator',parameters('environment_code'),uniqueString(deployment().name)) )]",
+        "storage_func_regenerate_dalle_name": "[if(greater(length(concat('stregeneratedalle', parameters('environment_code'),uniqueString(deployment().name))), 24), substring(concat('stregeneratedalle',parameters('environment_code'),uniqueString(deployment().name)),0,24) , concat('stregeneratedalle',parameters('environment_code'),uniqueString(deployment().name)) )]",
+        "func_recommend_images_app_name": "[concat('func-recommend-images-',variables('unique_suffix'))]",
+        "func_search_horizontal_app_name": "[concat('func-openai-search-horizontal-',variables('unique_suffix'))]",
+        "func_campaign_generator_app_name": "[concat('func-campaign-generator-',variables('unique_suffix'))]",
+        "func_regenerate_dalle_app_name": "[concat('func-regenerate-dalle-',variables('unique_suffix'))]",
+        "func_pdf_indexer_name": "[concat('func-pdf-indexer-',variables('unique_suffix'))]",
+        "app_openaidemo_name": "[concat('app-open-ai-',variables('unique_suffix'))]",
+        "serverfarms_app_openaidemo_name": "[concat('asp-openaidemo-app-',variables('unique_suffix'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/tags",
+            "apiVersion": "2019-10-01",
+            "name": "default",
+            "properties": {
+                "tags": {
+                    "DeploymentId": "[parameters('environment_code')]",
+                    "UniqueId": "[uniqueString(deployment().name)]",
+                    "WsId": "[parameters('pbi_workspace_id')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2022-12-01",
+            "name": "[variables('accounts_open_ai_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "S0"
+            },
+            "kind": "OpenAI",
+            "properties": {
+                "customSubDomainName": "[variables('accounts_open_ai_name')]",
+                "publicNetworkAccess": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2022-12-01",
+            "name": "[variables('accounts_cog_openai_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "S0"
+            },
+            "kind": "CognitiveServices",
+            "properties": {
+                "apiProperties": {
+                    "statisticsEnabled": false
+                },
+                "customSubDomainName": "[variables('accounts_cog_openai_name')]",
+                "publicNetworkAccess": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2022-12-01",
+            "name": "[variables('forms_openai_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "S0"
+            },
+            "kind": "FormRecognizer",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "customSubDomainName": "[variables('forms_openai_name')]",
+                "networkAcls": {
+                    "defaultAction": "Allow",
+                    "virtualNetworkRules": [],
+                    "ipRules": []
+                },
+                "publicNetworkAccess": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Search/searchServices",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('search_openai_demo_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "standard"
+            },
+            "properties": {
+                "replicaCount": 1,
+                "partitionCount": 1,
+                "hostingMode": "Default",
+                "publicNetworkAccess": "Enabled",
+                "networkRuleSet": {
+                    "ipRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('storage_account_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            },
+            "resources": [
+                {
+                    "type": "blobServices/containers",
+                    "apiVersion": "2022-09-01",
+                    "name": "[concat('default/', variables('default_data_lake_storage_file_system_name'))]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+                    ],
+                    "properties": {
+                        "defaultEncryptionScope": "$account-encryption-key",
+                        "denyEncryptionScopeOverride": false,
+                        "publicAccess": "Container"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": [
+                        {
+                            "allowedOrigins": [
+                                "*"
+                            ],
+                            "allowedMethods": [
+                                "GET"
+                            ],
+                            "maxAgeInSeconds": 1000,
+                            "exposedHeaders": [
+                                "*"
+                            ],
+                            "allowedHeaders": [
+                                "*"
+                            ]
+                        },
+                        {
+                            "allowedOrigins": [
+                                "*"
+                            ],
+                            "allowedMethods": [
+                                "POST"
+                            ],
+                            "maxAgeInSeconds": 1000,
+                            "exposedHeaders": [
+                                "*"
+                            ],
+                            "allowedHeaders": [
+                                "*"
+                            ]
+                        },
+                        {
+                            "allowedOrigins": [
+                                "*"
+                            ],
+                            "allowedMethods": [
+                                "DELETE"
+                            ],
+                            "maxAgeInSeconds": 1000,
+                            "exposedHeaders": [
+                                "*"
+                            ],
+                            "allowedHeaders": [
+                                "*"
+                            ]
+                        },
+                        {
+                            "allowedOrigins": [
+                                "*"
+                            ],
+                            "allowedMethods": [
+                                "MERGE"
+                            ],
+                            "maxAgeInSeconds": 1000,
+                            "exposedHeaders": [
+                                "*"
+                            ],
+                            "allowedHeaders": [
+                                "*"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default/data2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storage_account_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default/openai')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storage_account_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default/contoso-cg-shopping')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storage_account_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default/vouquahyaeyiepo')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storage_account_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default/data3')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storage_account_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default/contoso-cg-fallback2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storage_account_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('storage_account_name'), '/default/pdfs')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storage_account_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storage_account_name'))]"
+            ],
+            "properties": {
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "Container"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('asp_func_recommend_images_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "B1"
+            },
+            "kind": "linux",
+            "properties": {
+                "reserved": true
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('storage_func_recommend_images_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('func_recommend_images_app_name')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storage_func_recommend_images_name'))]",
+                "[concat('Microsoft.Web/serverfarms/', variables('asp_func_recommend_images_name'))]"
+            ],
+            "kind": "functionapp,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(variables('func_recommend_images_app_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(variables('func_recommend_images_app_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId(variables('resource_group_name'), 'Microsoft.Web/serverfarms', variables('asp_func_recommend_images_name'))]",
+                "reserved": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "PYTHON|3.10",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": true,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 0,
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storage_func_recommend_images_name'), ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storage_func_recommend_images_name')), '2019-04-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "AzureWebJobsFeatureFlags",
+                            "value": "EnableWorkerIndexing"
+                        },
+                        {
+                            "name": "AzureWebJobsSecretStorageType",
+                            "value": "Blob"
+                        },
+                        {
+                            "name": "BUILD_FLAGS",
+                            "value": "UseExpressBuild"
+                        },
+                        {
+                            "name": "ENABLE_ORYX_BUILD",
+                            "value": "true"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "python"
+                        },
+                        {
+                            "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+                            "value": "1"
+                        },
+                        {
+                            "name": "XDG_CACHE_HOME",
+                            "value": "/tmp/.cache"
+                        }
+                    ],
+                    "use32BitWorkerProcess": true,
+                    "managedPipelineMode": "Integrated",
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://functions.azure.com",
+                            "https://functions-staging.azure.com",
+                            "https://functions-next.azure.com"
+                        ],
+                        "supportCredentials": false
+                    }
+                },
+                "containerSize": 1536,
+                "httpsOnly": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('func_recommend_images_app_name'), '/web')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('func_recommend_images_app_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "PYTHON|3.10",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "[concat('$', variables('func_recommend_images_app_name'))]",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('asp_func_regenerate_dalle_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "B1"
+            },
+            "kind": "linux",
+            "properties": {
+                "reserved": true
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('storage_func_regenerate_dalle_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('func_regenerate_dalle_app_name')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storage_func_regenerate_dalle_name'))]",
+                "[concat('Microsoft.Web/serverfarms/', variables('asp_func_regenerate_dalle_name'))]"
+            ],
+            "kind": "functionapp,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(variables('func_regenerate_dalle_app_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(variables('func_regenerate_dalle_app_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId(variables('resource_group_name'), 'Microsoft.Web/serverfarms', variables('asp_func_regenerate_dalle_name'))]",
+                "reserved": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "PYTHON|3.10",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": true,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 0,
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storage_func_regenerate_dalle_name'), ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storage_func_regenerate_dalle_name')), '2019-04-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "AzureWebJobsFeatureFlags",
+                            "value": "EnableWorkerIndexing"
+                        },
+                        {
+                            "name": "BUILD_FLAGS",
+                            "value": "UseExpressBuild"
+                        },
+                        {
+                            "name": "ENABLE_ORYX_BUILD",
+                            "value": "true"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "python"
+                        },
+                        {
+                            "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+                            "value": "1"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storage_func_regenerate_dalle_name'), ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storage_func_regenerate_dalle_name')), '2019-04-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "XDG_CACHE_HOME",
+                            "value": "/tmp/.cache"
+                        }
+                    ],
+                    "use32BitWorkerProcess": true,
+                    "managedPipelineMode": "Integrated",
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://functions.azure.com",
+                            "https://functions-staging.azure.com",
+                            "https://functions-next.azure.com"
+                        ],
+                        "supportCredentials": false
+                    }
+                },
+                "containerSize": 1536,
+                "httpsOnly": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('func_regenerate_dalle_app_name'), '/web')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('func_regenerate_dalle_app_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "PYTHON|3.10",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "[concat('$', variables('func_regenerate_dalle_app_name'))]",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('asp_func_pdf_indexer_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "B1"
+            },
+            "kind": "linux",
+            "properties": {
+                "reserved": true
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('storage_func_pdf_indexer_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('func_pdf_indexer_name')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storage_func_pdf_indexer_name'))]",
+                "[concat('Microsoft.Web/serverfarms/', variables('asp_func_pdf_indexer_name'))]"
+            ],
+            "kind": "functionapp,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(variables('func_pdf_indexer_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(variables('func_pdf_indexer_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId(variables('resource_group_name'), 'Microsoft.Web/serverfarms', variables('asp_func_pdf_indexer_name'))]",
+                "reserved": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "PYTHON|3.10",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": true,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 0,
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storage_func_pdf_indexer_name'), ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storage_func_pdf_indexer_name')), '2019-04-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "AzureWebJobsFeatureFlags",
+                            "value": "EnableWorkerIndexing"
+                        },
+                        {
+                            "name": "BUILD_FLAGS",
+                            "value": "UseExpressBuild"
+                        },
+                        {
+                            "name": "ENABLE_ORYX_BUILD",
+                            "value": "true"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "python"
+                        },
+                        {
+                            "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+                            "value": "1"
+                        },
+                        {
+                            "name": "XDG_CACHE_HOME",
+                            "value": "/tmp/.cache"
+                        }
+                    ],
+                    "use32BitWorkerProcess": true,
+                    "managedPipelineMode": "Integrated",
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://functions.azure.com",
+                            "https://functions-staging.azure.com",
+                            "https://functions-next.azure.com"
+                        ],
+                        "supportCredentials": false
+                    }
+                },
+                "containerSize": 1536,
+                "httpsOnly": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('func_pdf_indexer_name'), '/web')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('func_pdf_indexer_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "PYTHON|3.10",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "[concat('$', variables('func_pdf_indexer_name'))]",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('asp_func_search_horizontal_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "B1"
+            },
+            "kind": "linux",
+            "properties": {
+                "reserved": true
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('storage_func_search_horizontal_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('func_search_horizontal_app_name')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storage_func_search_horizontal_name'))]",
+                "[concat('Microsoft.Web/serverfarms/', variables('asp_func_search_horizontal_name'))]"
+            ],
+            "kind": "functionapp,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(variables('func_search_horizontal_app_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(variables('func_search_horizontal_app_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId(variables('resource_group_name'), 'Microsoft.Web/serverfarms', variables('asp_func_search_horizontal_name'))]",
+                "reserved": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "PYTHON|3.9",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": true,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 0,
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storage_func_search_horizontal_name'), ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storage_func_search_horizontal_name')), '2019-04-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "CONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storage_account_name'), ';AccountKey=', listKeys(resourceId(variables('resource_group_name'),'Microsoft.Storage/storageAccounts', variables('storage_account_name')), '2019-04-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
+                        },
+                        {
+                            "name": "DISABLE_HUGO_BUILD",
+                            "value": "true"
+                        },
+                        {
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "true"
+                        },
+                        {
+                            "name": "AZURE_OPENAI_SERVICE",
+                            "value": "[variables('accounts_open_ai_name')]"
+                        },
+                        {
+                            "name": "AZURE_SEARCH_INDEX",
+                            "value": "prod-responsibleai"
+                        },
+                        {
+                            "name": "AZURE_SEARCH_SERVICE",
+                            "value": "[variables('search_openai_demo_name')]"
+                        },
+                        {
+                            "name": "AZURE_STORAGE_ACCOUNT",
+                            "value": "[variables('storage_account_name')]"
+                        },
+                        {
+                            "name": "AZURE_STORAGE_CONTAINER",
+                            "value": "prod-responsibleai"
+                        },
+                        {
+                            "name": "AzureWebJobsFeatureFlags",
+                            "value": "EnableWorkerIndexing"
+                        },
+                        {
+                            "name": "AzureWebJobsSecretStorageType",
+                            "value": "Blob"
+                        },
+                        {
+                            "name": "BUILD_FLAGS",
+                            "value": "UseExpressBuild"
+                        },
+                        {
+                            "name": "ENABLE_ORYX_BUILD",
+                            "value": "true"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_PROCESS_COUNT",
+                            "value": "10"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "python"
+                        },
+                        {
+                            "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+                            "value": "1"
+                        }
+                    ],
+                    "use32BitWorkerProcess": true,
+                    "managedPipelineMode": "Integrated",
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://functions.azure.com",
+                            "https://functions-staging.azure.com",
+                            "https://functions-next.azure.com"
+                        ],
+                        "supportCredentials": false
+                    }
+                },
+                "containerSize": 1536,
+                "httpsOnly": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('func_search_horizontal_app_name'), '/web')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('func_search_horizontal_app_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "PYTHON|3.9",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "[concat('$', variables('func_search_horizontal_app_name'))]",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('asp_func_campaign_generator_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "B1"
+            },
+            "kind": "linux",
+            "properties": {
+                "reserved": true
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('storage_func_campaign_generator_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('func_campaign_generator_app_name')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storage_func_campaign_generator_name'))]",
+                "[concat('Microsoft.Web/serverfarms/', variables('asp_func_campaign_generator_name'))]"
+            ],
+            "kind": "functionapp,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(variables('func_campaign_generator_app_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(variables('func_campaign_generator_app_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId(variables('resource_group_name'), 'Microsoft.Web/serverfarms', variables('asp_func_campaign_generator_name'))]",
+                "reserved": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "Python|3.9",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": false,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 200,
+                    "minimumElasticInstanceCount": 0,
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storage_func_campaign_generator_name'), ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storage_func_campaign_generator_name')), '2019-04-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "python"
+                        }
+                    ],
+                    "use32BitWorkerProcess": true,
+                    "managedPipelineMode": "Integrated",
+                    "cors": {
+                        "allowedOrigins": [
+                            "https://functions.azure.com",
+                            "https://functions-staging.azure.com",
+                            "https://functions-next.azure.com"
+                        ],
+                        "supportCredentials": false
+                    }
+                },
+                "containerSize": 1536,
+                "httpsOnly": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('func_campaign_generator_app_name'), '/web')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('func_campaign_generator_app_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "PYTHON|3.9",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "[concat('$', variables('func_campaign_generator_app_name'))]",
+                "azureStorageAccounts": {},
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('serverfarms_app_openaidemo_name')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "S1"
+            },
+            "kind": "linux",
+            "properties": {
+                "reserved": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('app_openaidemo_name')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('serverfarms_app_openaidemo_name'))]"
+            ],
+            "kind": "app,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(variables('app_openaidemo_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(variables('app_openaidemo_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('serverfarms_app_openaidemo_name'))]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "DOTNETCORE|6.0",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": true,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": true,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(variables('app_openaidemo_name'), '/web')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('app_openaidemo_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "DOTNETCORE|6.0",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "[concat('$', variables('app_openaidemo_name'))]",
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetRouteAllEnabled": false,
+                "vnetPrivatePortsCount": 0,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "preWarmedInstanceCount": 0,
+                "functionAppScaleLimit": 0,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "minimumElasticInstanceCount": 1,
+                "azureStorageAccounts": {}
+            }
+        }
+    ],
+    "outputs": {}
+}
