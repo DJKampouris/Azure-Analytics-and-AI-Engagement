@@ -40,7 +40,7 @@ In this demo, you will see the Azure OpenAI Service based assistant for Enterpri
 * [Git](https://git-scm.com/downloads)
 * [Powershell 7+ (pwsh)](https://github.com/powershell/powershell) - For Windows users only.
   * **Important**: Ensure you can run `pwsh.exe` from a PowerShell command. If this fails, you likely need to upgrade PowerShell.
-* [Clone the repository to your local](https://dev.azure.com/daidemos/Microsoft%20Data%20and%20AI%20DREAM%20Demos%20and%20DDiB/_git/DreamDemoInABox?version=GBopen-ai-ddib&anchor=execution-through-webapp-scenario-1&path=/artifacts)
+* [Clone the repository to your local](https://github.com/microsoft/Azure-Analytics-and-AI-Engagement/tree/azure-openai)
 * [Visual Studio Code](https://code.visualstudio.com/download)
 * [Azure Account](https://portal.azure.com/)
 * [Postman](https://www.postman.com/downloads/)
