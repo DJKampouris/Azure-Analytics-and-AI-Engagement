@@ -56,7 +56,7 @@ In this demo, you will see the Azure OpenAI Service based assistant for Enterpri
 
 There are two ways to execute this demo:
 
--   [Method 1 - Executing the code on local machine in Python using Postman](#method-1-executing-the-code-on-local-machine-in-python-using-postman)
+-   [Method 1 - Executing the code on local machine in Python using Postman](#method-1---executing-the-code-on-local-machine-in-python-using-postman)
 
     -   [PDF INDEXER](#pdf-indexer)
     -   [Search Horizontal](#search-horizontal)
@@ -64,15 +64,15 @@ There are two ways to execute this demo:
     -   [Recommend Images](#recommend-images)
     -   [Regenerate Images with DALL-E 2](#regenerate-images-with-dall-e-2)
 
--   [Method 2 - Executing the demo through demo web app](#method-2-executing-the-demo-through-demo-web-app)
+-   [Method 2 - Executing the demo through demo web app](#method-2---executing-the-demo-through-demo-web-app)
 
-    -   [Scenario 1 - Azure OpenAI Service and Azure Cognitive Search powered chatbot for Enterprise data](#scenario-1-azure-openai-service-and-azure-cognitive-search-powered-chatbot-for-enterprise-data)
+    -   [Scenario 1 - Azure OpenAI Service and Azure Cognitive Search powered chatbot for Enterprise data](#scenario-1---azure-openai-service-and-azure-cognitive-search-powered-chatbot-for-enterprise-data)
         -   [Steps to configure function app used in Scenario 1](#steps-to-configure-function-app-used-in-scenario-1)    
 
-    -   [Scenario 2 - Social Media Campaign and Product Recommendation](#scenario-2-social-media-campaign-and-product-recommendation)
+    -   [Scenario 2 - Social Media Campaign and Product Recommendation](#scenario-2---social-media-campaign-and-product-recommendation)
         -   [Steps to configure function app used in Scenario 2](#steps-to-configure-function-app-used-in-scenario-2) 
 
-    -   [Scenario 3 - Azure OpenAI with Speech Service](#scenario-3-azure-openai-with-speech-service)
+    -   [Scenario 3 - Azure OpenAI with Speech Service](#scenario---3-azure-openai-with-speech-service)
         -   [Steps to configure app service used in scenario 3](#steps-to-configure-app-service-used-in-scenario-3) 
 
 -   [Appendix](#appendix)
@@ -927,13 +927,12 @@ You just need to replace "#OPENAI_SERVICE#" with Your openAI service name.
 
 ----
 ## Appendix
-----
 
 ### Training the Knowledge Base using Postman and Python
 
 To train the knowledge base for Scenario 1: "Azure OpenAI Service and Azure Cognitive Search powered chatbot for Enterprise data", we have used an automation script "openAISetup.ps1". However, the knowledge base can also be trained using the following steps:
 
-### Steps to train the Knowledge Base:
+### Steps to train the Knowledge Ba```````se:
 
 1. **Start** VS Code on your loacal machine. The following screen will appear.
     ![VS Code landing page](media/vs_code_landing_page.png)

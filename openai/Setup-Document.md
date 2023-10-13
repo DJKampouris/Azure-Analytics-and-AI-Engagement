@@ -127,7 +127,7 @@ The data set under the /data folder is licensed under the [CDLA-Permissive-2 Lic
 
 ### Task 2: Power BI Workspace creation
 
-1. **Open** Power BI in a new tab using the following link:  [https://app.powerbi.com/](https://app.powerbi.com/)
+1. **Open** Power BI in a new tab by clicking [HERE](https://app.powerbi.com/).
 
 2. **Sign in**, to Power BI using your Power BI Pro account.
 
@@ -143,7 +143,7 @@ The data set under the /data folder is licensed under the [CDLA-Permissive-2 Lic
 
 	> **Note:** Please create a workspace by the name "DPoC-OpenAI".
 
-5. **Copy** the workspace GUID or ID. You can get this by browsing to [https://app.powerbi.com/](https://app.powerbi.com/), selecting the workspace, and then copying the GUID from the address URL.
+5. **Copy** the workspace GUID or ID. You can get this by browsing to [Power BI](https://app.powerbi.com/), selecting the workspace, and then copying the GUID from the address URL.
 
 6. **Paste** the GUID in a notepad for future reference.
 
@@ -154,7 +154,6 @@ The data set under the /data folder is licensed under the [CDLA-Permissive-2 Lic
 ### Task 3: Deploy the ARM Template.
 
 1. **Open** this link in a new tab of the same browser that you are currently in: 
-	
 	
 	<a href='https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmicrosoft%2FAzure-Analytics-and-AI-Engagement%2Fazure-openai%2Fopenai%2Fmain-template.json' target='_blank'><img src='http://azuredeploy.net/deploybutton.png' /></a>
 
