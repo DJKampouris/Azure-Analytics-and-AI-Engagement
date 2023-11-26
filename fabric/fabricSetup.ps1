@@ -76,11 +76,11 @@ else {
 
         return $template;
     }
-
+cd "C:\git\Azure-Analytics-and-AI-Engagement\fabric"
     az login
 
     #for powershell...
-    Connect-AzAccount -DeviceCode
+    Connect-AzAccount 
 
     $starttime=get-date
 
@@ -141,7 +141,7 @@ else {
     # }
     # $max_index = $locations.Count - 1
     # $rand = (0..$max_index) | Get-Random
-    $Region = read-host "Enter the region for deployment"
+    $Region = read-host "Enter the region for deployment  northcentralus"
     $namespaces_adx_thermostat_occupancy_name = "adx-thermostat-occupancy-$suffix"
     $sites_adx_thermostat_realtime_name = "app-realtime-kpi-analytics-$suffix"
     $serverfarm_adx_thermostat_realtime_name = "asp-realtime-kpi-analytics-$suffix"
@@ -293,43 +293,40 @@ else {
     $thermostat_telemetry_Realtime_URL =  ""
     $occupancy_data_Realtime_URL =  ""
 
-    #download azcopy command
-    if ([System.Environment]::OSVersion.Platform -eq "Unix") {
-        $azCopyLink = Check-HttpRedirect "https://aka.ms/downloadazcopy-v10-linux"
+#download azcopy command
+#if ([System.Environment]::OSVersion.Platform -eq "Unix") {
+#    $azCopyLink = Check-HttpRedirect "https://aka.ms/downloadazcopy-v10-linux"
+#    if (!$azCopyLink) {
+#        $azCopyLink = "https://azcopyvnext.azureedge.net/release20200709/azcopy_linux_amd64_10.5.0.tar.gz"
+#    }
+#    Invoke-WebRequest $azCopyLink -OutFile "azCopy.tar.gz"
+#    tar -xf "azCopy.tar.gz"
+#    $azCopyCommand = (Get-ChildItem -Path ".\" -Recurse azcopy).Directory.FullName
+#    if ($azCopyCommand.count -gt 1) {
+#        $azCopyCommand = $azCopyCommand[0];
+#    }
+#    cd $azCopyCommand
+#    chmod +x azcopy
+#    cd ..
+#    $azCopyCommand += "\azcopy"
+#} else {
+#    $azCopyLink = Check-HttpRedirect "https://aka.ms/downloadazcopy-v10-windows"
+#    if (!$azCopyLink) {
+#        $azCopyLink = "https://azcopyvnext.azureedge.net/release20200501/azcopy_windows_amd64_10.4.3.zip"
+#    }
+#
+#    Invoke-WebRequest $azCopyLink -OutFile "azCopy.zip"
+#    Expand-Archive "azCopy.zip" -DestinationPath ".\" -Force
+#    $azCopyCommand = (Get-ChildItem -Path ".\" -Recurse azcopy.exe).Directory.FullName
+#
+#    if ($azCopyCommand.count -gt 1) {
+#        $azCopyCommand = $azCopyCommand[0];
+#    }#
+#
+#    $azCopyCommand += "\azcopy"
+#}
 
-        if (!$azCopyLink) {
-            $azCopyLink = "https://azcopyvnext.azureedge.net/release20200709/azcopy_linux_amd64_10.5.0.tar.gz"
-        }
-
-        Invoke-WebRequest $azCopyLink -OutFile "azCopy.tar.gz"
-        tar -xf "azCopy.tar.gz"
-        $azCopyCommand = (Get-ChildItem -Path ".\" -Recurse azcopy).Directory.FullName
-
-        if ($azCopyCommand.count -gt 1) {
-            $azCopyCommand = $azCopyCommand[0];
-        }
-
-        cd $azCopyCommand
-        chmod +x azcopy
-        cd ..
-        $azCopyCommand += "\azcopy"
-    } else {
-        $azCopyLink = Check-HttpRedirect "https://aka.ms/downloadazcopy-v10-windows"
-
-        if (!$azCopyLink) {
-            $azCopyLink = "https://azcopyvnext.azureedge.net/release20200501/azcopy_windows_amd64_10.4.3.zip"
-        }
-
-        Invoke-WebRequest $azCopyLink -OutFile "azCopy.zip"
-        Expand-Archive "azCopy.zip" -DestinationPath ".\" -Force
-        $azCopyCommand = (Get-ChildItem -Path ".\" -Recurse azcopy.exe).Directory.FullName
-
-        if ($azCopyCommand.count -gt 1) {
-            $azCopyCommand = $azCopyCommand[0];
-        }
-
-        $azCopyCommand += "\azcopy"
-    }
+$azCopyCommand = "azcopy"
 
     ## storage AZ Copy
     $storage_account_key = (Get-AzStorageAccountKey -ResourceGroupName $rgName -AccountName $storage_account_name)[0].Value
