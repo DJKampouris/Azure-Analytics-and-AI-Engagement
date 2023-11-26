@@ -196,12 +196,12 @@ cd "C:\git\Azure-Analytics-and-AI-Engagement\fabric"
     $tenantId = (Get-AzContext).Tenant.Id
     azcopy login --tenant-id $tenantId
 
-    azcopy copy "https://fabricddib.blob.core.windows.net/bronzelakehousefiles/*" "https://onelake.blob.fabric.microsoft.com/$contosoSalesWsName/$lakehouseBronze.Lakehouse/Files/" --overwrite=prompt --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
-    azcopy copy "https://fabricddib.blob.core.windows.net/silverlakehousetables/*" "https://onelake.blob.fabric.microsoft.com/$contosoSalesWsName/$lakehouseSilver.Lakehouse/Tables/" --overwrite=prompt --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
-    azcopy copy "https://fabricddib.blob.core.windows.net/silverlakehousefiles/*" "https://onelake.blob.fabric.microsoft.com/$contosoSalesWsName/$lakehouseSilver.Lakehouse/Files/" --overwrite=prompt --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
-    azcopy copy "https://fabricddib.blob.core.windows.net/financedata/*" "https://onelake.blob.fabric.microsoft.com/$contosoFinanceWsName/$lakehouseFinance.Lakehouse/Files/" --overwrite=prompt --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
+azcopy copy "https://fabricddib.blob.core.windows.net/bronzelakehousefiles/*" "https://onelake.blob.fabric.microsoft.com/$contosoSalesWsName/$lakehouseBronze.Lakehouse/Files/" --overwrite=true --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
+azcopy copy "https://fabricddib.blob.core.windows.net/silverlakehousetables/*" "https://onelake.blob.fabric.microsoft.com/$contosoSalesWsName/$lakehouseSilver.Lakehouse/Tables/" --overwrite=true --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
+azcopy copy "https://fabricddib.blob.core.windows.net/silverlakehousefiles/*" "https://onelake.blob.fabric.microsoft.com/$contosoSalesWsName/$lakehouseSilver.Lakehouse/Files/" --overwrite=true --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
+azcopy copy "https://fabricddib.blob.core.windows.net/financedata/*" "https://onelake.blob.fabric.microsoft.com/$contosoFinanceWsName/$lakehouseFinance.Lakehouse/Files/" --overwrite=true --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
 
-    #azcopy copy "https://fabricddib.blob.core.windows.net/goldlakehousetables/*" "https://onelake.blob.fabric.microsoft.com/$contosoSalesWsName/$lakehouseGold.Lakehouse/Tables/" --overwrite=prompt --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
+azcopy copy "https://fabricddib.blob.core.windows.net/goldlakehousetables/*" "https://onelake.blob.fabric.microsoft.com/$contosoSalesWsName/$lakehouseGold.Lakehouse/Tables/" --overwrite=true --from-to=BlobBlob --s2s-preserve-access-tier=false --check-length=true --include-directory-stub=false --s2s-preserve-blob-tags=false --recursive --trusted-microsoft-suffixes=onelake.blob.fabric.microsoft.com --log-level=INFO;
 
     Add-Content log.txt "------Uploading assets to Lakehouses COMPLETE------"
     Write-Host "------------Uploading assets to Lakehouses COMPLETE------------"
@@ -223,6 +223,7 @@ cd "C:\git\Azure-Analytics-and-AI-Engagement\fabric"
             $url = "https://api.powerbi.com/v1.0/myorg/groups/$wsIdContosoSales/imports?datasetDisplayName=$($name.BaseName)&nameConflict=CreateOrOverwrite";
             $fullyQualifiedPath=Resolve-Path -path $FilePath
             $fileBytes = [System.IO.File]::ReadAllBytes($fullyQualifiedPath);
+            
             $fileEnc = [system.text.encoding]::GetEncoding("ISO-8859-1").GetString($fileBytes);
             $boundary = [System.Guid]::NewGuid().ToString();
             $LF = "`r`n";
@@ -450,7 +451,7 @@ $azCopyCommand = "azcopy"
     `"consentType`":`"AllPrincipals`",
     `"resourceId`":`"$powerBiAppId`",
     `"scope`":`"Dataset.ReadWrite.All Dashboard.Read.All Report.Read.All Group.Read Group.Read.All Content.Create Metadata.View_Any Dataset.Read.All Data.Alter_Any`",
-    `"expiryTime`":`"2021-03-29T14:35:32.4943409+03:00`",
+    `"expiryTime`":`"2024-12-31T14:35:32.4943409+03:00`",
     `"startTime`":`"2020-03-29T14:35:32.4933413+03:00`"
     }";
 
@@ -464,7 +465,7 @@ $azCopyCommand = "azcopy"
     `"consentType`":`"AllPrincipals`",
     `"resourceId`":`"$powerBiAppId`",
     `"scope`":`"User.Read Directory.AccessAsUser.All`",
-    `"expiryTime`":`"2021-03-29T14:35:32.4943409+03:00`",
+    `"expiryTime`":`"2024-12-31T14:35:32.4943409+03:00`",
     `"startTime`":`"2020-03-29T14:35:32.4933413+03:00`"
     }";
 
